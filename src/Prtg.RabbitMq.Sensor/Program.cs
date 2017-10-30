@@ -34,7 +34,10 @@ namespace Prtg.RabbitMq.Sensor
                 Name = args.Length >= 6 ? args[5] : null
             };
 
-            PrtgResponse response = await Read(requestParams);
+            var response = new
+            {
+                prtg = await Read(requestParams)
+            };
 
             Console.WriteLine(JsonConvert.SerializeObject(response, Formatting.Indented, new JsonSerializerSettings
             {
