@@ -82,7 +82,7 @@ namespace Prtg.RabbitMq.Sensor
                 }
                 string nodeName = overviewData.node;
                 PrtgResponse nodes = ReadNode(nodesData, nodeName);
-                
+
                 return new PrtgResponse
                 {
                     result = overview.result.Concat(nodes.result).ToList()
@@ -192,98 +192,110 @@ namespace Prtg.RabbitMq.Sensor
             {
                 channel = "GC per Second",
                 unit = PrtgUnit.Count,
-                value = ReadDecimal(() =>node.gc_num_details.rate)
+                value = ReadDecimal(() => node.gc_num_details.rate, truncateToInteger: true)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "GC Bytes Reclaimed per Second",
                 unit = PrtgUnit.BytesMemory,
-                value = ReadDecimal(() =>node.gc_bytes_reclaimed_details.rate)
+                value = ReadDecimal(() => node.gc_bytes_reclaimed_details.rate, truncateToInteger: true)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "I/O Reads per Second",
-                unit = PrtgUnit.Count,
-                value = ReadDecimal(() =>node.io_read_count_details.rate)
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_read_count_details.rate)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "I/O Writes per Second",
-                unit = PrtgUnit.Count,
-                value = ReadDecimal(() =>node.io_write_count_details.rate)
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_write_count_details.rate)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "I/O Syncs per Second",
-                unit = PrtgUnit.Count,
-                value = ReadDecimal(() =>node.io_sync_count_details.rate)
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_sync_count_details.rate)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "I/O Seeks per Second",
-                unit = PrtgUnit.Count,
-                value = ReadDecimal(() =>node.io_seek_count_details.rate)
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_seek_count_details.rate)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Reopened File Handle",
-                unit = PrtgUnit.Count,
+                unit = PrtgUnit.Custom,
+                Float = 1,
                 value = node.io_reopen_count
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Reopened File Handle per Second",
-                unit = PrtgUnit.Count,
-                value = ReadDecimal(() =>node.io_reopen_count_details.rate)
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_reopen_count_details.rate)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Opened File Handle per Second",
-                unit = PrtgUnit.Count,
-                value = ReadDecimal(() =>node.io_file_handle_open_attempt_count_details.rate)
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_file_handle_open_attempt_count_details.rate)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "I/O Read Time (ms)",
-                unit = PrtgUnit.Count,
-                value = node.io_read_avg_time
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_read_avg_time)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "I/O Write Time (ms)",
-                unit = PrtgUnit.Count,
-                value = node.io_write_avg_time
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_write_avg_time)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "I/O Sync Time (ms)",
-                unit = PrtgUnit.Count,
-                value = node.io_sync_avg_time
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_sync_avg_time)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "I/O Seek Time (ms)",
-                unit = PrtgUnit.Count,
-                value = node.io_seek_avg_time
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_seek_avg_time)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "File Handle Open Time (ms)",
-                unit = PrtgUnit.Count,
-                value = node.io_file_handle_open_attempt_avg_time
+                unit = PrtgUnit.Custom,
+                Float = 1,
+                value = ReadDecimal(() => node.io_file_handle_open_attempt_avg_time)
             });
 
             return response;
@@ -292,7 +304,7 @@ namespace Prtg.RabbitMq.Sensor
         public PrtgResponse ReadOverview(dynamic data)
         {
             var response = new PrtgResponse();
-            
+
             // queue_totals
 
             response.result.Add(new PrtgResult
@@ -393,7 +405,7 @@ namespace Prtg.RabbitMq.Sensor
         public static PrtgResponse ReadQueue(dynamic data)
         {
             var response = new PrtgResponse();
-            
+
             response.result.Add(new PrtgResult
             {
                 channel = "Total",
@@ -456,11 +468,19 @@ namespace Prtg.RabbitMq.Sensor
             return response;
         }
 
-        private static string ReadDecimal(Func<decimal> func)
+        private static string ReadDecimal(Func<decimal> func, bool truncateToInteger = false)
         {
             try
             {
-                return func().ToString(CultureInfo.InvariantCulture);
+                decimal d = func();
+                if (truncateToInteger)
+                {
+                    return ((int)d).ToString(CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    return d.ToString(CultureInfo.InvariantCulture);
+                }
             }
             catch (Exception)
             {
