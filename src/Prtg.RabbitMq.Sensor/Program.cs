@@ -93,11 +93,11 @@ namespace Prtg.RabbitMq.Sensor
                 string url = request.Type;
                 if (request.Host != null)
                 {
-                    url += "/" + request.Host;
+                    url += "/" + Uri.EscapeDataString(request.Host);
                 }
                 if (request.Name != null)
                 {
-                    url += "/" + request.Name;
+                    url += "/" + Uri.EscapeDataString(request.Name);
                 }
                 object data;
                 using (var result = await client.GetAsync(url))
