@@ -136,35 +136,35 @@ namespace Prtg.RabbitMq.Sensor
             {
                 channel = "Used Memory",
                 unit = PrtgUnit.BytesMemory,
-                value = node.mem_used
+                value = ReadInt32(() => node.mem_used)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Disk Free",
                 unit = PrtgUnit.BytesDisk,
-                value = node.disk_free
+                value = ReadInt32(() => node.disk_free)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Used File Descriptors",
                 unit = PrtgUnit.Count,
-                value = node.fd_used
+                value = ReadInt32(() => node.fd_used)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Used Socket Descriptors",
                 unit = PrtgUnit.Count,
-                value = node.sockets_used
+                value = ReadInt32(() => node.sockets_used)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Used Erlang Processes",
                 unit = PrtgUnit.Count,
-                value = node.proc_used
+                value = ReadInt32(() => node.proc_used)
             });
 
             response.result.Add(new PrtgResult
@@ -185,21 +185,21 @@ namespace Prtg.RabbitMq.Sensor
             {
                 channel = "Used Memory per Second",
                 unit = PrtgUnit.BytesMemory,
-                value = ReadDecimal(() => node.mem_used_details.rate)
+                value = ReadInt32(() => node.mem_used_details.rate)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "GC per Second",
                 unit = PrtgUnit.Count,
-                value = ReadDecimal(() => node.gc_num_details.rate, truncateToInteger: true)
+                value = ReadInt32(() => node.gc_num_details.rate)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "GC Bytes Reclaimed per Second",
                 unit = PrtgUnit.BytesMemory,
-                value = ReadDecimal(() => node.gc_bytes_reclaimed_details.rate, truncateToInteger: true)
+                value = ReadInt32(() => node.gc_bytes_reclaimed_details.rate)
             });
 
             response.result.Add(new PrtgResult
@@ -239,7 +239,7 @@ namespace Prtg.RabbitMq.Sensor
                 channel = "Reopened File Handle",
                 unit = PrtgUnit.Custom,
                 Float = 1,
-                value = node.io_reopen_count
+                value = ReadDecimal(() => node.io_reopen_count)
             });
 
             response.result.Add(new PrtgResult
@@ -311,21 +311,21 @@ namespace Prtg.RabbitMq.Sensor
             {
                 channel = "Total",
                 unit = PrtgUnit.Count,
-                value = data.queue_totals.messages
+                value = ReadInt32(() => data.queue_totals.messages)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Ready",
                 unit = PrtgUnit.Count,
-                value = data.queue_totals.messages_ready
+                value = ReadInt32(() => data.queue_totals.messages_ready)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Unacked",
                 unit = PrtgUnit.Count,
-                value = data.queue_totals.messages_unacknowledged
+                value = ReadInt32(() => data.queue_totals.messages_unacknowledged)
             });
 
             // message_stats
@@ -368,35 +368,35 @@ namespace Prtg.RabbitMq.Sensor
             {
                 channel = "Consumers",
                 unit = PrtgUnit.Count,
-                value = data.object_totals.consumers
+                value = ReadInt32(() => data.object_totals.consumers)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Queues",
                 unit = PrtgUnit.Count,
-                value = data.object_totals.queues
+                value = ReadInt32(() => data.object_totals.queues)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Exchanges",
                 unit = PrtgUnit.Count,
-                value = data.object_totals.exchanges
+                value = ReadInt32(() => data.object_totals.exchanges)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Connections",
                 unit = PrtgUnit.Count,
-                value = data.object_totals.connections
+                value = ReadInt32(() => data.object_totals.connections)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Channels",
                 unit = PrtgUnit.Count,
-                value = data.object_totals.channels
+                value = ReadInt32(() => data.object_totals.channels)
             });
 
             return response;
@@ -410,21 +410,21 @@ namespace Prtg.RabbitMq.Sensor
             {
                 channel = "Total",
                 unit = PrtgUnit.Count,
-                value = data.messages
+                value = ReadInt32(() => data.messages)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Ready",
                 unit = PrtgUnit.Count,
-                value = data.messages_ready
+                value = ReadInt32(() => data.messages_ready)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Unacked",
                 unit = PrtgUnit.Count,
-                value = data.messages_unacknowledged
+                value = ReadInt32(() => data.messages_unacknowledged)
             });
 
             response.result.Add(new PrtgResult
@@ -455,32 +455,36 @@ namespace Prtg.RabbitMq.Sensor
             {
                 channel = "Consumers",
                 unit = PrtgUnit.Count,
-                value = data.consumers
+                value = ReadInt32(() => data.consumers)
             });
 
             response.result.Add(new PrtgResult
             {
                 channel = "Used Memory",
                 unit = PrtgUnit.BytesMemory,
-                value = data.memory
+                value = ReadInt32(() => data.memory)
             });
 
             return response;
         }
 
-        private static string ReadDecimal(Func<decimal> func, bool truncateToInteger = false)
+        private static string ReadDecimal(Func<decimal> func)
         {
             try
             {
-                decimal d = func();
-                if (truncateToInteger)
-                {
-                    return ((int)d).ToString(CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    return d.ToString(CultureInfo.InvariantCulture);
-                }
+                return func().ToString(CultureInfo.InvariantCulture);
+            }
+            catch (Exception)
+            {
+                return "0";
+            }
+        }
+
+        private static string ReadInt32(Func<int> func)
+        {
+            try
+            {
+                return func().ToString(CultureInfo.InvariantCulture);
             }
             catch (Exception)
             {
