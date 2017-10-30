@@ -3,9 +3,11 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net452</TargetFramework>
+        <Version>1.0.0</Version>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="ILRepack" Version="2.0.13" />
         <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     </ItemGroup>
 
@@ -17,5 +19,17 @@
     <ItemGroup>
         <Folder Include="Properties\" />
     </ItemGroup>
+
+    <Target Name="ILRepack" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
+        <ItemGroup>
+            <MergeAssemblies Include="$(OutputPath)\Prtg.RabbitMq.Sensor.exe" />
+            <MergeAssemblies Include="$(OutputPath)\Newtonsoft.Json.dll" />
+        </ItemGroup>
+        <PropertyGroup>
+            <OutputAssembly>$(OutputPath)\PRTG-RabbitMQ-Sensor\Prtg.RabbitMq.Sensor.exe</OutputAssembly>
+        </PropertyGroup>
+        <Message Text="MERGING: @(MergeAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
+        <Exec WorkingDirectory="$(OutputDir)" Command="$(ILRepack) /out:&quot;$(OutputAssembly)&quot; @(MergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
+    </Target>
 
 </Project>
